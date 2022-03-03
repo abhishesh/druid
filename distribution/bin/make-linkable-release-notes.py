@@ -22,7 +22,7 @@ def get_header_level(line):
     count = 0
     for element in line:
         if element == '#':
-            count = count + 1
+            count += 1
         else:
             break
     return count
@@ -67,7 +67,7 @@ def process_release_notes(release_version, release_notes, outfile):
             prefixes = []
             for line in file:
                 header_level = get_header_level(line)
-                header_text = line[header_level + 1:len(line) - 1]
+                header_text = line[header_level + 1:-1]
                 if (header_level > 0 and "<a name=" not in line):
                     if header_level > current_level:
                         levels.append(current_level)
@@ -87,14 +87,15 @@ def process_release_notes(release_version, release_notes, outfile):
 
                     print(
                         "{} <a name=\"{}\" href=\"#{}\">#</a> {}".format(
-                            line[0:header_level],
+                            line[:header_level],
                             link_text,
                             link_text,
-                            line[header_level + 1:]
+                            line[header_level + 1 :],
                         ),
                         file=outfile,
-                        end = ''
+                        end='',
                     )
+
                 else:
                     print(line, file=outfile, end = '')
     return

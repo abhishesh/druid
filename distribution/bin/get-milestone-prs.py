@@ -52,29 +52,30 @@ command = "git rev-list {}..{}".format(previous_branch_first_commit, upstream_re
 all_release_commits = subprocess.check_output(command, shell=True).decode('UTF-8')
 
 for commit_id in all_release_commits.splitlines():
-    try:
-        # wait 3 seconds between calls to avoid hitting the rate limit
-        time.sleep(3)
+  try:
+    # wait 3 seconds between calls to avoid hitting the rate limit
+    time.sleep(3)
 
-        search_url = "https://api.github.com/search/issues?q=type:pr+is:merged+is:closed+repo:apache/druid+SHA:{}"
-        resp = requests.get(search_url.format(commit_id), auth=(github_username, os.environ["GIT_TOKEN"]))
-        resp_json = resp.json()
+    search_url = "https://api.github.com/search/issues?q=type:pr+is:merged+is:closed+repo:apache/druid+SHA:{}"
+    resp = requests.get(search_url.format(commit_id), auth=(github_username, os.environ["GIT_TOKEN"]))
+    resp_json = resp.json()
 
-        milestone_found = False
-        closed_pr_nums = []
-        if (resp_json.get("items") is None):
-            print("Could not get PRs for commit ID {}, resp: {}".format(commit_id, resp_json))
-            continue
-
-        for pr in resp_json["items"]:
-            closed_pr_nums.append(pr["number"])
-            milestone = pr["milestone"]
-            if milestone is not None:
-                milestone_found = True
-                print("COMMIT: {},  PR#: {},  MILESTONE: {}".format(commit_id, pr["number"], pr["milestone"]["url"]))
-        if not milestone_found:
-            print("NO MILESTONE FOUND FOR COMMIT: {}, CLOSED PRs: {}".format(commit_id, closed_pr_nums))
-
-    except Exception as e:
-        print("Got exception for commitID: {}  ex: {}".format(commit_id, e))
+    milestone_found = False
+    closed_pr_nums = []
+    if (resp_json.get("items") is None):
+        print("Could not get PRs for commit ID {}, resp: {}".format(commit_id, resp_json))
         continue
+
+    for pr in resp_json["items"]:
+      closed_pr_nums.append(pr["number"])
+      milestone = pr["milestone"]
+      if milestone is not None:
+        milestone_found = True
+        print("COMMIT: {},  PR#: {},  MILESTONE: {}".format(
+            commit_id, pr["number"], milestone["url"]))
+    if not milestone_found:
+        print("NO MILESTONE FOUND FOR COMMIT: {}, CLOSED PRs: {}".format(commit_id, closed_pr_nums))
+
+  except Exception as e:
+      print("Got exception for commitID: {}  ex: {}".format(commit_id, e))
+      continue
