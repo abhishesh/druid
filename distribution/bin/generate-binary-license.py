@@ -31,26 +31,20 @@ def get_dep_key(group_id, artifact_id, version):
     return (group_id, artifact_id, version)
 
 def get_version_string(version):
-    if type(version) == str:
-        return version
-    else:
-        return str(version)
+    return version if type(version) == str else str(version)
 
 def module_to_upper(module):
     extensions_offset = module.lower().find("extensions")
     if extensions_offset < 0:
         return module.upper()
     elif extensions_offset == 0:
-        return module[0:len("extensions")].upper() + module[len("extensions"):len(module)]
+        return module[:len("extensions")].upper() + module[len("extensions"):]
     else:
         raise Exception("Expected extensions at 0, but {}".format(extensions_offset))
 
 def is_non_empty(dic, key):
     if key in dic and dic[key] is not None:
-        if type(dic[key]) == str:
-            return len(dic[key]) > 0
-        else:
-            return True
+        return len(dic[key]) > 0 if type(dic[key]) == str else True
     else:
         return False
 
@@ -58,11 +52,11 @@ def print_license_phrase(license_phrase):
     remaining = license_phrase
     while len(remaining) > 0:
         if len(remaining) > 120:
-            chars_of_200 = remaining[0:120]
+            chars_of_200 = remaining[:120]
             phrase_len = chars_of_200.rfind(" ")
             if phrase_len < 0:
                 raise Exception("Can't find whitespace in {}".format(chars_of_200))
-            print_outfile("    {}".format(remaining[0:phrase_len]))
+            print_outfile("    {}".format(remaining[:phrase_len]))
             remaining = remaining[phrase_len:]
         else:
             print_outfile("    {}".format(remaining))
@@ -126,9 +120,7 @@ def print_license(license):
                 print_outfile("      * {}:{}".format(group_id, artifact_id))
 
 def print_license_name_underbar(license_name):
-    underbar = ""
-    for _ in range(len(license_name)):
-        underbar += "="
+    underbar = "".join("=" for _ in range(len(license_name)))
     print_outfile("{}\n".format(underbar))
 
 def generate_license(apache_license_v2, license_yaml):

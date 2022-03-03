@@ -135,21 +135,17 @@ if __name__ == '__main__':
 
     # when run by travis, we run this script without arguments, so collect the test suite name from environment
     # variables. if it doesn't exist, fail
-    if len(sys.argv) == 1:
-        if 'TRAVIS_JOB_NAME' in os.environ:
-            suite_name = os.environ['TRAVIS_JOB_NAME']
-        else:
-            failWithUsage()
-    elif len(sys.argv) == 2:
+    if len(sys.argv) == 1 and 'TRAVIS_JOB_NAME' in os.environ:
+        suite_name = os.environ['TRAVIS_JOB_NAME']
+    elif len(sys.argv) == 1 or len(sys.argv) != 2:
+        failWithUsage()
+    else:
         # to help with testing, can explicitly pass a test suite name
         suite_name = sys.argv[1]
-    else:
-        failWithUsage()
-
-    # we only selectively run CI for PR builds, branch builds such as master and releases will always run all suites
-    is_pr = False
-    if 'TRAVIS_PULL_REQUEST' in os.environ and os.environ['TRAVIS_PULL_REQUEST'] != 'false':
-        is_pr = True
+    is_pr = (
+        'TRAVIS_PULL_REQUEST' in os.environ
+        and os.environ['TRAVIS_PULL_REQUEST'] != 'false'
+    )
 
     if not is_pr:
         print("Not a pull request build, need to run all test suites")

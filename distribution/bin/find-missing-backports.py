@@ -28,10 +28,7 @@ def extract_pr_title_from_commit_message(commit_msg):
     if pr_num_pos < 0:
         pr_num_pos = len(commit_msg)
     backport_pos = commit_msg.find("[Backport]")
-    if backport_pos < 0:
-        backport_pos = 0
-    else:
-        backport_pos = backport_pos + len("[Backport]")
+    backport_pos = 0 if backport_pos < 0 else backport_pos + len("[Backport]")
     return commit_msg[backport_pos:pr_num_pos].strip()
 
 
@@ -46,12 +43,14 @@ def extract_pr_title(pr_json):
 
 def find_missing_backports(pr_jsons, release_pr_subjects):
     for pr in pr_jsons:
-        if pr['milestone'] is not None:
-            if pr['milestone']['number'] == milestone_number:
-                for pr_title_candidate in extract_pr_title(pr):
-                    if pr_title_candidate in release_pr_subjects:
-                        return
-                print("Missing backport found for PR {}, url: {}".format(pr['number'], pr['html_url']))
+        if (
+            pr['milestone'] is not None
+            and pr['milestone']['number'] == milestone_number
+        ):
+            for pr_title_candidate in extract_pr_title(pr):
+                if pr_title_candidate in release_pr_subjects:
+                    return
+            print("Missing backport found for PR {}, url: {}".format(pr['number'], pr['html_url']))
 
 
 def find_next_url(links):
@@ -61,9 +60,8 @@ def find_next_url(links):
             match_result = re.match("<https.*>", link)
             if match_result is None:
                 raise Exception("Next link[{}] is found but can't find url".format(link))
-            else:
-                url_holder = match_result.group(0)
-                return url_holder[1:-1]
+            url_holder = match_result.group(0)
+            return url_holder[1:-1]
     return None
 
 
